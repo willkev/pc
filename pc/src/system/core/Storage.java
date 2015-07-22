@@ -210,35 +210,25 @@ public class Storage implements NativeKeyListener, NativeMouseListener {
         return false;
     }
 
-    private long calculateRangeTime() {
-        lastTime = time;
-        time = System.currentTimeMillis();
-        if (lastTime == 0) {
-            return 0;
-        }
-        return time - lastTime;
-    }
-
     private void storeMouse(int x, int y, int button) {
         if (showLog) {
             System.out.format("\n[%03d,%03d] button-%d", x, y, button);
         }
-        writeFile(EventType.Mouse, x + "," + y + "," + button);
+        write(EventType.Mouse, x + "," + y + "," + button);
     }
 
     private void storeText(int keyCode) {
         if (showLog) {
             System.out.print((char) keyCode);
         }
-        writeFile(EventType.Text, KeyEvent.getKeyText(keyCode) + "," + keyCode);
+        write(EventType.Text, keyCode);
     }
 
     private void storeTextControl(int keyCode) {
-        String text = KeyEvent.getKeyText(keyCode);
         if (showLog) {
-            System.out.print("[" + text + "]");
+            System.out.print("[" + KeyEvent.getKeyText(keyCode) + "]");
         }
-        writeFile(EventType.Control, text + "," + keyCode);
+        write(EventType.Control, keyCode);
     }
 
     private void storeTextNewLine() {
@@ -251,19 +241,32 @@ public class Storage implements NativeKeyListener, NativeMouseListener {
         if (showLog) {
             System.out.print("[?]");
         }
-        writeFile(EventType.None, "[?]");
+        write(EventType.None, "[?]");
     }
 
-    // type,time,text,keycode
-    private void writeFile(EventType eventType, String text) {
+    private void write(EventType eventType, int keyCode) {
+        write(eventType, "" + keyCode);
+    }
+
+    private void write(EventType eventType, String text) {
         if (openFile()) {
             try {
+                // type, time, [keycode | x, y, button]
                 writer.write(eventType.getCode() + "," + calculateRangeTime() + "," + text + "\n");
                 writer.flush();
-            } catch (IOException ex) {
+            } catch (Exception ex) {
                 System.out.println("ERROR writeFile:" + ex.getMessage());
             }
         }
+    }
+
+    private long calculateRangeTime() {
+        lastTime = time;
+        time = System.currentTimeMillis();
+        if (lastTime == 0) {
+            return 0;
+        }
+        return time - lastTime;
     }
 
     private boolean openFile() {
