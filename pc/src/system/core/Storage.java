@@ -13,7 +13,6 @@ import static java.awt.event.KeyEvent.VK_CLEAR;
 import static java.awt.event.KeyEvent.VK_CLOSE_BRACKET;
 import static java.awt.event.KeyEvent.VK_COMMA;
 import static java.awt.event.KeyEvent.VK_COMPOSE;
-import static java.awt.event.KeyEvent.VK_CONTEXT_MENU;
 import static java.awt.event.KeyEvent.VK_DELETE;
 import static java.awt.event.KeyEvent.VK_DIVIDE;
 import static java.awt.event.KeyEvent.VK_DOWN;
@@ -43,8 +42,6 @@ import static java.awt.event.KeyEvent.VK_Z;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import org.jnativehook.GlobalScreen;
-import org.jnativehook.NativeHookException;
 import org.jnativehook.keyboard.NativeKeyEvent;
 import org.jnativehook.keyboard.NativeKeyListener;
 import org.jnativehook.mouse.NativeMouseEvent;
@@ -53,6 +50,8 @@ import org.jnativehook.mouse.NativeMouseListener;
 public class Storage implements NativeKeyListener, NativeMouseListener {
 
     private boolean showLog = true;
+    private EventType lastEvent = EventType.None;
+    private FileWriter writer;
 
     public enum EventType {
 
@@ -82,17 +81,6 @@ public class Storage implements NativeKeyListener, NativeMouseListener {
             }
             return None;
         }
-    }
-
-    private long time = 0, lastTime = 0;
-    private EventType lastEvent = EventType.None;
-    private FileWriter writer;
-
-    public Storage() throws NativeHookException {
-        GlobalScreen.registerNativeHook();
-        GlobalScreen.getInstance().addNativeKeyListener(this);
-        GlobalScreen.getInstance().addNativeMouseListener(this);
-        //GlobalScreen.getInstance().addNativeMouseWheelListener(this);
     }
 
     @Override
@@ -167,10 +155,6 @@ public class Storage implements NativeKeyListener, NativeMouseListener {
             storeTextUndefined();
         } else {
             storeTextControl(keyCode);
-            // "Scroll Lock" gera um evento de "Menu de Contexto"
-            if (keyCode == VK_SCROLL_LOCK) {
-                storeTextControl(VK_CONTEXT_MENU);
-            }
         }
     }
 
@@ -252,21 +236,12 @@ public class Storage implements NativeKeyListener, NativeMouseListener {
         if (openFile()) {
             try {
                 // type, time, [keycode | x, y, button]
-                writer.write(eventType.getCode() + "," + calculateRangeTime() + "," + text + "\n");
+                writer.write(eventType.getCode() + "," + System.currentTimeMillis() + "," + text + "\n");
                 writer.flush();
             } catch (Exception ex) {
                 System.out.println("ERROR writeFile:" + ex.getMessage());
             }
         }
-    }
-
-    private long calculateRangeTime() {
-        lastTime = time;
-        time = System.currentTimeMillis();
-        if (lastTime == 0) {
-            return 0;
-        }
-        return time - lastTime;
     }
 
     private boolean openFile() {
